@@ -24,12 +24,13 @@ class FlowDefinition(NamedTuple):
 def get_storage(flow_def: FlowDefinition, configs: dict):
     dockerfile = path.abspath(configs.get('dockerfile'))
     dockerignore = path.abspath(configs.get('dockerignore'))
-    flow_location = f"/opt/prefect/{flow_def.file}"
+    flow_location = path.join("/opt/prefect/", "flows", flow_def.file)
+
     return Docker(
         dockerfile=dockerfile,
         dockerignore=dockerignore,
         stored_as_script=True,
-        path=f"/opt/prefect/{flow_def.file}",
+        path=flow_location,
         files={
             flow_def.abs_path: flow_location
         },
