@@ -1,7 +1,6 @@
 FROM python:3.9-alpine
 
 RUN apk add gcc musl-dev linux-headers
-RUN pip install prefect
 
 COPY atom/ /modules/atom/
 COPY setup.py /modules/

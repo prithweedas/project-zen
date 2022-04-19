@@ -1,0 +1,6 @@
+project: "demo-atom"
+flow_dir: "atom/flows/"
+dockerfile: "configs/Dockerfile"
+dockerignore: "configs/.dockerignore"
+env:
+  API_KEY: "demo-atom"
