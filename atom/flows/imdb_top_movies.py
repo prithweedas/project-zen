@@ -29,8 +29,7 @@ with Flow('IMDB top movies') as flow:
 
         film_details_list = get_list_redult_from_mapped_task(film_details_map)
 
-        send_notification(film_details_list,
-                          upstream_tasks=[film_details_list])
+        send_notification(film_details_list)
 
     with case(is_valid, False):
         send_notification('Parameter validation failed!')
