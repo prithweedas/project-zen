@@ -49,7 +49,7 @@ def get_configs(file_path: str) -> dict:
     return configs
 
 
-def get_flows_to_register(filenames: List[str], configs=dict) -> List[FlowDefinition]:
+def get_flows(filenames: List[str], configs=dict) -> List[FlowDefinition]:
     flows = []
     if filenames is None:
         flow_dir = path.abspath(configs.get('flow_dir'))
@@ -87,8 +87,18 @@ def register_flows(flows: List[FlowDefinition], configs: dict):
                       idempotency_key=flow.serialized_hash())
 
 
+def visualize_flows(flows: List[FlowDefinition], configs: dict):
+    for flow_def in flows:
+        flow = flow_def.flow
+        slug = flow_def.slug
+        flow.visualize(filename=path.join(
+            path.abspath(configs.get('visualize_dir', 'viz')), slug), format='jpeg')
+
+
 def get_args():
     parser = ArgumentParser('atom')
+    parser.add_argument('command', choices=[
+                        'register', 'visualize'], help='Command to execute')
     parser.add_argument('-c', '--config', default='config.yaml',
                         help='Path to config file', metavar='')
     parser.add_argument(
@@ -99,6 +109,10 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
     configs = get_configs(args.config)
-    flows_to_register = get_flows_to_register(
+
+    flows = get_flows(
         filenames=args.flow, configs=configs)
-    register_flows(flows=flows_to_register, configs=configs)
+    if args.command == 'register':
+        register_flows(flows=flows, configs=configs)
+    elif args.command == 'visualize':
+        visualize_flows(flows=flows, configs=configs)
