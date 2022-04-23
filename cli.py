@@ -83,7 +83,8 @@ def register_flows(flows: List[FlowDefinition], configs: dict):
         if flow.run_config is None:
             run_config = get_run_config(configs)
             flow.run_config = run_config
-        flow.register(project_name=configs.get('project'))
+        flow.register(project_name=configs.get('project'),
+                      idempotency_key=flow.serialized_hash())
 
 
 def get_args():
