@@ -1,7 +1,7 @@
-project: "demo-atom"
-flow_dir: "atom/flows/"
+project: "demo-zen"
+flow_dir: "zen/flows/"
 dockerfile: "configs/Dockerfile"
 dockerignore: "configs/.dockerignore"
 visualize_dir: "viz"
 env:
-  API_KEY: "demo-atom"
+  DEMO_API_KEY: "SOME_API_KEY"

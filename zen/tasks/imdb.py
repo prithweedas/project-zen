@@ -4,8 +4,8 @@ import prefect
 from prefect import task
 import datetime
 
-from atom.utils.imdb import FilmDetails, get_search_url, is_valid_parameters, get_film_url
-from atom.utils.shared import get_html_soup
+from zen.utils.imdb import FilmDetails, get_search_url, is_valid_parameters, get_film_url
+from zen.utils.shared import get_html_soup
 
 
 @task(name='check parameter validity',

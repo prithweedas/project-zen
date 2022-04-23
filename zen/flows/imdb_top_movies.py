@@ -1,10 +1,10 @@
 from inspect import Parameter
 from prefect import Flow, Parameter, case
 
-from atom.tasks.imdb import extract_film_data, validate_parameters, make_imdb_search_url, \
+from zen.tasks.imdb import extract_film_data, validate_parameters, make_imdb_search_url, \
     fetch_search_page, extract_film_urls, fetch_film_page
-from atom.tasks.notifications import send_notification
-from atom.tasks.shared import get_list_redult_from_mapped_task
+from zen.tasks.notifications import send_notification
+from zen.tasks.shared import get_list_redult_from_mapped_task
 
 with Flow('IMDB top movies') as flow:
     sort_by = Parameter('sort_by', 'ranking')

@@ -9,8 +9,8 @@ requirements = [
 ]
 
 setup(
-    packages=find_packages(exclude=['atom.flows']),
-    name='atom',
+    packages=find_packages(exclude=['zen.flows']),
+    name='zen',
     version='0.1.0',
     install_requires=requirements
 )
