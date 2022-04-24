@@ -14,7 +14,7 @@ resource "aws_vpc" "main" {
   assign_generated_ipv6_cidr_block = false
 
   tags = {
-    Name = "${var.project_name}-vpc"
+    "Name" = "${var.project_name}-vpc"
   }
 }
 
@@ -26,4 +26,20 @@ variable "vpc_cidr_block" {
 output "vpc_id" {
   value       = aws_vpc.main.id
   description = "VPC id created for this project"
+}
+
+
+# NOTE: Internet Gateway
+
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    "Name" = "${var.project_name}-igw"
+  }
+}
+
+output "igw_id" {
+  value       = aws_internet_gateway.main.id
+  description = "Internet Gateway id"
 }
