@@ -28,4 +28,5 @@ variable "primary_region" {
 variable "aws_profile" {
   type        = string
   description = "AWS profile to use"
+  default     = "default"
 }

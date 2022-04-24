@@ -1,5 +1,10 @@
 # NOTE: VPC
 
+variable "vpc_cidr_block" {
+  type        = string
+  description = "CIDR block for VPC"
+}
+
 resource "aws_vpc" "main" {
   cidr_block       = var.vpc_cidr_block
   instance_tenancy = "default"
@@ -16,11 +21,6 @@ resource "aws_vpc" "main" {
   tags = {
     "Name" = "${var.project_name}-vpc"
   }
-}
-
-variable "vpc_cidr_block" {
-  type        = string
-  description = "CIDR block for VPC"
 }
 
 output "vpc_id" {
@@ -42,4 +42,16 @@ resource "aws_internet_gateway" "main" {
 output "igw_id" {
   value       = aws_internet_gateway.main.id
   description = "Internet Gateway id"
+}
+
+# NOTE: Subnets
+
+variable "subnets" {
+  type = list(object(
+    {
+      cidr_block = string
+      private    = bool
+      region     = string
+    }
+  ))
 }
