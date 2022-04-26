@@ -33,7 +33,6 @@ output "vpc_id" {
 
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
-
   tags = {
     "Name" = "${var.project_name}-igw"
   }
@@ -46,12 +45,70 @@ output "igw_id" {
 
 # NOTE: Subnets
 
-variable "subnets" {
-  type = list(object(
+variable "public_subnets" {
+  type = map(object(
     {
-      cidr_block = string
-      private    = bool
-      region     = string
+      cidr_block        = string
+      availability_zone = string
     }
   ))
+
+  validation {
+    condition     = length(var.public_subnets) >= 2
+    error_message = "Must be atleast 2 subnets in 2 different AZs."
+  }
+}
+
+variable "private_subnets" {
+  type = map(object(
+    {
+      cidr_block        = string
+      availability_zone = string
+    }
+  ))
+
+  validation {
+    condition     = length(var.private_subnets) >= 2
+    error_message = "Must be atleast 2 subnets in 2 different AZs."
+  }
+}
+
+resource "aws_subnet" "public" {
+  for_each = var.public_subnets
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value.cidr_block
+  availability_zone = each.value.availability_zone
+
+  map_public_ip_on_launch = true
+
+  tags = {
+    "Name"                                      = "${var.project_name}-${each.key}-subnet"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+  }
+}
+
+output "public_subnet_ids" {
+  value = {
+    for k, v in aws_subnet.public : k => v.id
+  }
+}
+
+resource "aws_subnet" "private" {
+  for_each = var.private_subnets
+
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value.cidr_block
+  availability_zone = each.value.availability_zone
+
+  tags = {
+    "Name"                                      = "${var.project_name}-${each.key}-subnet"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+  }
+}
+
+output "private_subnet_ids" {
+  value = {
+    for k, v in aws_subnet.private : k => v.id
+  }
 }
