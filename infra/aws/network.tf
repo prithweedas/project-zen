@@ -90,7 +90,7 @@ resource "aws_subnet" "public" {
 
 output "public_subnet_ids" {
   value = {
-    for k, v in aws_subnet.public : k => v.id
+    for key, value in aws_subnet.public : key => value.id
   }
 }
 
@@ -109,6 +109,26 @@ resource "aws_subnet" "private" {
 
 output "private_subnet_ids" {
   value = {
-    for k, v in aws_subnet.private : k => v.id
+    for key, value in aws_subnet.private : key => value.id
+  }
+}
+
+# NOTE: Elastic IPs
+
+resource "aws_eip" "eips" {
+  for_each = aws_subnet.public
+
+  depends_on = [
+    aws_internet_gateway.main
+  ]
+
+  tags = {
+    "Name" = "${var.project_name}-${each.key}-eip"
+  }
+}
+
+output "elastic_ips" {
+  value = {
+    for key, value in aws_eip.eips : key => value.id
   }
 }
