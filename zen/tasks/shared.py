@@ -16,5 +16,5 @@ def get_html_soup(url: str) -> BeautifulSoup:
 
 
 @task(name='Get list fom mapped task')
-def get_list_redult_from_mapped_task(data):
+def get_list_result_from_mapped_task(data):
     return data
