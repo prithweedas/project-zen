@@ -113,7 +113,7 @@ resource "aws_iam_role" "eks_nodes" {
 
 resource "aws_iam_role_policy_attachment" "eks_nodes" {
   for_each   = local.eks_nodes_policy_arns
-  role       = aws_iam_role.eks.name
+  role       = aws_iam_role.eks_nodes.name
   policy_arn = each.value
 }
 
