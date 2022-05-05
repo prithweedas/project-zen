@@ -131,4 +131,76 @@ output "elastic_ips" {
   value = {
     for key, value in aws_eip.eips : key => value.id
   }
+
+  description = "Elastic IPs for NAT Gateways"
+}
+
+# NOTE: NAT Gateways
+
+
+resource "aws_nat_gateway" "public" {
+  for_each = aws_subnet.public
+
+  allocation_id = aws_eip.eips[each.key].id
+
+  subnet_id = each.value.id
+
+  tags = {
+    "Name" = "${var.project_name}-${each.key}-nat-gateway"
+  }
+}
+
+output "nat_gateways" {
+  value = {
+    for key, value in aws_nat_gateway.public : key => value.id
+  }
+
+  description = "NAT Gateways"
+}
+
+# NOTE: Route tables
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = {
+    "Name" = "${var.project_name}-public-route-table"
+  }
+}
+
+
+resource "aws_route_table" "private" {
+  for_each = aws_subnet.private
+
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.public[replace(each.key, "private", "public")].id
+  }
+
+  tags = {
+    "Name" = "${var.project_name}-${each.key}-route-table"
+  }
+}
+
+# NOTE: Route table associations
+
+resource "aws_route_table_association" "public" {
+  for_each = aws_subnet.public
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "private" {
+  for_each = aws_subnet.private
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private[each.key].id
 }
