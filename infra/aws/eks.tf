@@ -47,7 +47,7 @@ variable "kubernetes_version" {
 }
 
 resource "aws_eks_cluster" "eks" {
-  name     = "${var.project_name}-eks-cluster"
+  name     = local.eks_cluster_name
   role_arn = aws_iam_role.eks.arn
   version  = var.kubernetes_version
 
@@ -121,4 +121,41 @@ resource "aws_iam_role_policy_attachment" "eks_nodes" {
 output "eks_node_iam_role" {
   value       = aws_iam_role.eks_nodes.name
   description = "IAM role for eks node group"
+}
+
+# NOTE: EKS Node group
+
+locals {
+  node_group_name = "${var.project_name}-eks-node-group"
+}
+
+resource "aws_eks_node_group" "node" {
+  cluster_name = aws_eks_cluster.eks.name
+
+  node_group_name = local.node_group_name
+
+  node_role_arn = aws_iam_role.eks_nodes.arn
+
+  subnet_ids = [for key, value in aws_subnet.private : value.id]
+
+  scaling_config {
+    desired_size = 2
+    max_size     = 4
+    min_size     = 2
+  }
+
+  ami_type             = "AL2_x86_64"
+  capacity_type        = "ON_DEMAND"
+  disk_size            = 20
+  force_update_version = false
+  instance_types       = ["t3.small"]
+  labels = {
+    role = local.node_group_name
+  }
+
+  tags = {
+    "Name" = aws_eks_cluster.eks.name
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.eks_nodes]
 }
