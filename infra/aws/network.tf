@@ -83,8 +83,8 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    "Name"                                      = "${var.project_name}-${each.key}-subnet"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "Name"                                                  = "${var.project_name}-${each.key}-subnet"
+    "kubernetes.io/cluster/${var.project_name}-eks-cluster" = "shared"
   }
 }
 
@@ -102,8 +102,8 @@ resource "aws_subnet" "private" {
   availability_zone = each.value.availability_zone
 
   tags = {
-    "Name"                                      = "${var.project_name}-${each.key}-subnet"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "Name"                                                  = "${var.project_name}-${each.key}-subnet"
+    "kubernetes.io/cluster/${var.project_name}-eks-cluster" = "shared"
   }
 }
 
