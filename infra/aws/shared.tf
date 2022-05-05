@@ -6,3 +6,8 @@ variable "project_name" {
 locals {
   eks_cluster_name = "${var.project_name}-eks-cluster"
 }
+
+output "region" {
+  value       = var.primary_region
+  description = "Region"
+}
