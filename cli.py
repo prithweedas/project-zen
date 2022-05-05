@@ -1,4 +1,4 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ArgumentTypeError
 from os import path, walk
 from typing import List, NamedTuple
 from slugify import slugify
@@ -64,8 +64,8 @@ def get_flows(filenames: List[str], configs=dict) -> List[FlowDefinition]:
                         abs_path=flow_file, name=flow.name, slug=slug))
         return flows
     else:
-        abs_filenames = map(path.abspath, filenames)
-        for flow_file in abs_filenames:
+        for file in filenames:
+            flow_file = path.abspath(file)
             flow = extract_flow_from_file(flow_file)
             slug = slugify(flow.name)
             flows.append(FlowDefinition(
@@ -98,7 +98,7 @@ def visualize_flows(flows: List[FlowDefinition], configs: dict):
 def get_args():
     parser = ArgumentParser('atom')
     parser.add_argument('command', choices=[
-                        'register', 'visualize'], help='Command to execute')
+                        'register', 'visualize', 'run'], help='Command to execute')
     parser.add_argument('-c', '--config', default='config.yaml',
                         help='Path to config file', metavar='')
     parser.add_argument(
@@ -110,9 +110,16 @@ if __name__ == '__main__':
     args = get_args()
     configs = get_configs(args.config)
 
+    if args.command == 'run' and (args.flow is None or len(args.flow) != 1):
+        raise ArgumentTypeError('number of flows must be one')
+
     flows = get_flows(
         filenames=args.flow, configs=configs)
+
     if args.command == 'register':
         register_flows(flows=flows, configs=configs)
     elif args.command == 'visualize':
         visualize_flows(flows=flows, configs=configs)
+    elif args.command == 'run':
+        flow = flows[0].flow
+        flow.run()

@@ -1,7 +1,9 @@
-project: "demo-zen"
+project: "project-zen"
 flow_dir: "zen/flows/"
 dockerfile: "configs/Dockerfile"
 dockerignore: "configs/.dockerignore"
 visualize_dir: "viz"
+aws_profile: "default"
+ecr_uri: "<ecr uri>"
 env:
   DEMO_API_KEY: "SOME_API_KEY"
