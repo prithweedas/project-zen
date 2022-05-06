@@ -30,3 +30,7 @@ public_subnets = {
 }
 
 kubernetes_version = "1.21"
+
+prefect_agent_namespace = "value"
+
+prefect_agent_serviceaccount = "value"

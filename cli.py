@@ -11,7 +11,7 @@ from prefect import Flow
 from prefect.storage.local import extract_flow_from_file
 from ruamel import yaml
 from prefect.storage import Docker
-from prefect.run_configs import DockerRun
+from prefect.run_configs import KubernetesRun
 
 
 IGNORE_PATHS = ["__pycache__"]
@@ -119,7 +119,7 @@ def get_storage(flow_def: FlowDefinition, configs: dict):
 
 
 def get_run_config(configs: dict):
-    return DockerRun(labels=[configs.get('project')])
+    return KubernetesRun(labels=[configs.get('project')])
 
 
 def get_configs(file_path: str) -> dict:

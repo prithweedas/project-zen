@@ -36,6 +36,11 @@ terraform {
       source  = "hashicorp/external"
       version = "2.2.2"
     }
+
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "2.11.0"
+    }
   }
 }
 
@@ -44,3 +49,4 @@ provider "aws" {
   region  = var.primary_region
   profile = var.aws_profile
 }
+
