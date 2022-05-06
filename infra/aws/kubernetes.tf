@@ -1,3 +1,39 @@
+# NOTE: update kubeconfig once eks is setup
+data "external" "kubeconfig" {
+  program = ["bash", "updatekubeconfig.sh", var.primary_region, aws_eks_cluster.eks.name, var.aws_profile]
+
+  depends_on = [
+    aws_eks_cluster.eks
+  ]
+}
+
+resource "kubernetes_namespace" "prefect" {
+  metadata {
+    name = "${var.project_name}-prefect-namespace"
+  }
+}
+
+locals {
+  iam_serviceaccount_annotation = "eks.amazonaws.com/role-arn"
+}
+
+resource "kubernetes_service_account" "prefect_serviceaccount" {
+  metadata {
+    name      = "${var.project_name}-prefect-serviceaccount"
+    namespace = kubernetes_namespace.prefect.id
+  }
+
+  depends_on = [
+    data.external.kubeconfig
+  ]
+
+  lifecycle {
+    # NOTE: we will annotate this later to avoid cycles
+    ignore_changes = [metadata.0.annotations]
+  }
+}
+
+
 # NOTE: OIDC setup to give pods access to AWS services
 
 variable "prefect_agent_namespace" {
@@ -73,7 +109,7 @@ data "aws_iam_policy_document" "prefect_aws_policy" {
     condition {
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
-      values   = ["system:serviceaccount:${var.prefect_agent_namespace}:${var.prefect_agent_serviceaccount}"]
+      values   = ["system:serviceaccount:${kubernetes_namespace.prefect.metadata[0].name}:${kubernetes_service_account.prefect_serviceaccount.metadata[0].name}"]
     }
 
     principals {
@@ -90,7 +126,7 @@ resource "aws_iam_role" "prefect_aws_role" {
   depends_on         = [aws_iam_openid_connect_provider.eks]
 }
 
-resource "aws_iam_role_policy_attachment" "aws_pods" {
+resource "aws_iam_role_policy_attachment" "prefect_aws_role" {
   role       = aws_iam_role.prefect_aws_role.name
   policy_arn = aws_iam_policy.prefect_s3_results_access.arn
 }
@@ -100,25 +136,19 @@ output "prefect_aws_role" {
   description = "IAM Role for prefect agent"
 }
 
-# NOTE: update kubeconfig once eks is setup
-data "external" "kubeconfig" {
-  program = ["bash", "updatekubeconfig.sh", var.primary_region, aws_eks_cluster.eks.name, var.aws_profile]
+# NOTE: annotate service account with newly created role
 
-  depends_on = [
-    aws_eks_cluster.eks
-  ]
-}
-
-resource "kubernetes_service_account_v1" "name" {
+resource "kubernetes_annotations" "prefect_serviceagent" {
+  api_version = "v1"
+  kind        = "ServiceAccount"
   metadata {
-    name      = var.prefect_agent_serviceaccount
-    namespace = var.prefect_agent_namespace
-    annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.prefect_aws_role.arn
-    }
+    name      = kubernetes_service_account.prefect_serviceaccount.metadata.0.name
+    namespace = kubernetes_service_account.prefect_serviceaccount.metadata.0.namespace
   }
-
-  depends_on = [
-    aws_eks_cluster.eks
-  ]
+  annotations = {
+    "eks.amazonaws.com/role-arn" = aws_iam_role.prefect_aws_role.arn
+  }
 }
+
+
+# NOTE: Roles and RoleBindings for prefect agent
