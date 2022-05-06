@@ -32,6 +32,10 @@ resource "aws_iam_openid_connect_provider" "eks" {
   tags = {
     "Name" = "${var.project_name}-oidc"
   }
+
+  depends_on = [
+    aws_eks_cluster.eks
+  ]
 }
 
 data "aws_iam_policy_document" "prefect_s3_results_access" {
@@ -94,4 +98,27 @@ resource "aws_iam_role_policy_attachment" "aws_pods" {
 output "prefect_aws_role" {
   value       = aws_iam_role.prefect_aws_role.name
   description = "IAM Role for prefect agent"
+}
+
+# NOTE: update kubeconfig once eks is setup
+data "external" "kubeconfig" {
+  program = ["bash", "updatekubeconfig.sh", var.primary_region, aws_eks_cluster.eks.name, var.aws_profile]
+
+  depends_on = [
+    aws_eks_cluster.eks
+  ]
+}
+
+resource "kubernetes_service_account_v1" "name" {
+  metadata {
+    name      = var.prefect_agent_serviceaccount
+    namespace = var.prefect_agent_namespace
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.prefect_aws_role.arn
+    }
+  }
+
+  depends_on = [
+    aws_eks_cluster.eks
+  ]
 }

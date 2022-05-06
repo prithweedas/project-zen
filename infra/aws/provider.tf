@@ -50,3 +50,6 @@ provider "aws" {
   profile = var.aws_profile
 }
 
+provider "kubernetes" {
+  config_path = "~/.kube/config"
+}
