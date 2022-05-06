@@ -30,3 +30,5 @@ public_subnets = {
 }
 
 kubernetes_version = "1.21"
+
+prefect_api_key = "value"
