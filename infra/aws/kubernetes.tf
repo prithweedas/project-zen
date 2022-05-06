@@ -44,18 +44,6 @@ locals {
 
 # NOTE: OIDC setup to give pods access to AWS services
 
-variable "prefect_agent_namespace" {
-  type        = string
-  description = "namespace where prefect agent will get deployed"
-  default     = "default"
-}
-
-variable "prefect_agent_serviceaccount" {
-  type        = string
-  description = "serviceaccount for prefect agent"
-  default     = "prefect"
-}
-
 data "external" "thumbprint" {
   program = ["bash", "thumbprint.sh", var.primary_region]
 }
@@ -177,5 +165,24 @@ resource "kubernetes_role" "prefect_agent" {
     api_groups = [""]
     resources  = ["events", "pods"]
     verbs      = ["*"]
+  }
+}
+
+resource "kubernetes_role_binding" "prefect_agent" {
+  metadata {
+    name      = "${var.project_name}-prefect-k8s-rolebinding"
+    namespace = local.prefect_k8s_namespace
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = kubernetes_role.prefect_agent.metadata.0.name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = local.prefect_k8s_serviceaccount
+    namespace = local.prefect_k8s_namespace
   }
 }
