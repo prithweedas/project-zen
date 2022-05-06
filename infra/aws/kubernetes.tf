@@ -14,13 +14,17 @@ resource "kubernetes_namespace" "prefect" {
 }
 
 locals {
+  prefect_k8s_namespace = kubernetes_namespace.prefect.metadata.0.name
+}
+
+locals {
   iam_serviceaccount_annotation = "eks.amazonaws.com/role-arn"
 }
 
 resource "kubernetes_service_account" "prefect_serviceaccount" {
   metadata {
     name      = "${var.project_name}-prefect-serviceaccount"
-    namespace = kubernetes_namespace.prefect.id
+    namespace = local.prefect_k8s_namespace
   }
 
   depends_on = [
@@ -31,6 +35,10 @@ resource "kubernetes_service_account" "prefect_serviceaccount" {
     # NOTE: we will annotate this later to avoid cycles
     ignore_changes = [metadata.0.annotations]
   }
+}
+
+locals {
+  prefect_k8s_serviceaccount = kubernetes_service_account.prefect_serviceaccount.metadata.0.name
 }
 
 
@@ -109,7 +117,7 @@ data "aws_iam_policy_document" "prefect_aws_policy" {
     condition {
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.eks.url, "https://", "")}:sub"
-      values   = ["system:serviceaccount:${kubernetes_namespace.prefect.metadata[0].name}:${kubernetes_service_account.prefect_serviceaccount.metadata[0].name}"]
+      values   = ["system:serviceaccount:${local.prefect_k8s_namespace}:${local.prefect_k8s_serviceaccount}"]
     }
 
     principals {
@@ -142,8 +150,8 @@ resource "kubernetes_annotations" "prefect_serviceagent" {
   api_version = "v1"
   kind        = "ServiceAccount"
   metadata {
-    name      = kubernetes_service_account.prefect_serviceaccount.metadata.0.name
-    namespace = kubernetes_service_account.prefect_serviceaccount.metadata.0.namespace
+    name      = local.prefect_k8s_serviceaccount
+    namespace = local.prefect_k8s_namespace
   }
   annotations = {
     "eks.amazonaws.com/role-arn" = aws_iam_role.prefect_aws_role.arn
@@ -152,3 +160,22 @@ resource "kubernetes_annotations" "prefect_serviceagent" {
 
 
 # NOTE: Roles and RoleBindings for prefect agent
+
+resource "kubernetes_role" "prefect_agent" {
+  metadata {
+    name      = "${var.project_name}-prefect-k8s-role"
+    namespace = local.prefect_k8s_namespace
+  }
+
+  rule {
+    api_groups = ["batch", "extensions"]
+    resources  = ["jobs"]
+    verbs      = ["*"]
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["events", "pods"]
+    verbs      = ["*"]
+  }
+}
