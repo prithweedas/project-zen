@@ -186,3 +186,123 @@ resource "kubernetes_role_binding" "prefect_agent" {
     namespace = local.prefect_k8s_namespace
   }
 }
+
+# NOTE: Deployment for prefect agent
+
+resource "kubernetes_deployment" "prefect_agent" {
+  wait_for_rollout = false
+  metadata {
+    generate_name = "${var.project_name}-prefect-agent"
+    labels = {
+      "name" = "prefect-agent"
+    }
+    namespace = local.prefect_k8s_namespace
+  }
+
+  spec {
+    replicas = 2
+    selector {
+      match_labels = {
+        "name" = "prefect-agent"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          "name" = "prefect-agent"
+        }
+      }
+      spec {
+        service_account_name = local.prefect_k8s_serviceaccount
+        container {
+          name  = "agent"
+          image = "prefecthq/prefect:1.2.0-python3.9"
+          # image_pull_policy = "Always"
+          liveness_probe {
+            failure_threshold = 2
+            http_get {
+              path = "/api/health"
+              port = 8080
+            }
+            initial_delay_seconds = 40
+            period_seconds        = 40
+          }
+
+          args = ["prefect agent kubernetes start"]
+
+          command = ["/bin/bash", "-c"]
+
+          env {
+            name  = "PREFECT__CLOUD__AGENT__AUTH_TOKEN"
+            value = var.prefect_api_key
+          }
+
+          env {
+            name  = "PREFECT__CLOUD__API"
+            value = "https://api.prefect.io"
+          }
+
+          env {
+            name  = "NAMESPACE"
+            value = local.prefect_k8s_namespace
+          }
+
+          env {
+            name  = "IMAGE_PULL_SECRETS"
+            value = ""
+          }
+
+          env {
+            name  = "PREFECT__CLOUD__AGENT__LABELS"
+            value = "['project-zen']"
+          }
+
+          env {
+            name  = "JOB_MEM_REQUEST"
+            value = ""
+          }
+          env {
+            name  = "JOB_CPU_REQUEST"
+            value = ""
+          }
+
+          env {
+            name  = "JOB_CPU_LIMIT"
+            value = ""
+          }
+
+          env {
+            name  = "IMAGE_PULL_POLICY"
+            value = ""
+          }
+
+          env {
+            # NOTE: in future we may need to use a different service account for Jobs
+            name  = "SERVICE_ACCOUNT_NAME"
+            value = local.prefect_k8s_serviceaccount
+          }
+
+          env {
+            name  = "PREFECT__BACKEND"
+            value = "cloud"
+          }
+
+          env {
+            name  = "PREFECT__CLOUD__AGENT__AGENT_ADDRESS"
+            value = "http://:8080"
+          }
+
+          env {
+            name  = "PREFECT__CLOUD__API_KEY"
+            value = var.prefect_api_key
+          }
+          env {
+            name  = "PREFECT__CLOUD__TENANT_ID"
+            value = ""
+          }
+        }
+      }
+    }
+  }
+}
