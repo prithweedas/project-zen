@@ -5,7 +5,8 @@ requirements = [
     'prefect==1.2.0',
     'beautifulsoup4==4.9.3',
     'lxml==4.8.0',
-    'requests==2.27.1'
+    'requests==2.27.1',
+    'boto3==1.22.7'
 ]
 
 setup(

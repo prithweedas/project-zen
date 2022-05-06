@@ -17,6 +17,6 @@ resource "aws_s3_bucket_acl" "flow_results_acl" {
 
 
 output "s3_bucket" {
-  value       = aws_s3_bucket.flow_results.arn
+  value       = aws_s3_bucket.flow_results.bucket
   description = "S3 bucket to store flow results"
 }

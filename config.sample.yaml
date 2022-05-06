@@ -6,5 +6,6 @@ visualize_dir: "viz"
 aws_profile: "default"
 region_name: "ap-south-1"
 ecr_registry_id: "<aws acount id>"
+results_bucket: "bucket"
 env:
   DEMO_API_KEY: "SOME_API_KEY"

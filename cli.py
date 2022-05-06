@@ -13,7 +13,6 @@ from ruamel import yaml
 from prefect.storage import Docker
 from prefect.run_configs import KubernetesRun
 
-
 IGNORE_PATHS = ["__pycache__"]
 
 
@@ -171,7 +170,7 @@ def register_flows(flows: List[FlowDefinition], configs: dict):
             flow.storage = storage
 
         if flow.run_config is None:
-            run_config = get_run_config(configs)
+            run_config = get_run_config(configs=configs)
             flow.run_config = run_config
 
         flow.register(project_name=configs.get('project'),
