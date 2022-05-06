@@ -31,6 +31,11 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 4.10"
     }
+
+    external = {
+      source  = "hashicorp/external"
+      version = "2.2.2"
+    }
   }
 }
 
@@ -39,5 +44,3 @@ provider "aws" {
   region  = var.primary_region
   profile = var.aws_profile
 }
-
-

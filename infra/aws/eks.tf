@@ -68,8 +68,18 @@ resource "aws_eks_cluster" "eks" {
   ]
 }
 
+locals {
+  eks_oidc_url = aws_eks_cluster.eks.identity[0]["oidc"][0]["issuer"]
+}
+
 output "eks_cluster" {
   value = aws_eks_cluster.eks.name
+}
+
+output "eks_oidc_url" {
+  value       = local.eks_oidc_url
+  sensitive   = true
+  description = "Open ID connect provider URL"
 }
 
 
