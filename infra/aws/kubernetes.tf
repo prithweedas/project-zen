@@ -216,9 +216,9 @@ resource "kubernetes_deployment" "prefect_agent" {
       spec {
         service_account_name = local.prefect_k8s_serviceaccount
         container {
-          name  = "agent"
-          image = "prefecthq/prefect:1.2.0-python3.9"
-          # image_pull_policy = "Always"
+          name              = "agent"
+          image             = "prefecthq/prefect:1.2.0-python3.9"
+          image_pull_policy = "Always"
           liveness_probe {
             failure_threshold = 2
             http_get {

@@ -1,13 +1,13 @@
-from prefect import Flow, Parameter, case
+from prefect import Parameter, case
 
 from zen.tasks.imdb import extract_film_data, validate_parameters, make_imdb_search_url, \
     fetch_search_page, extract_film_urls, fetch_film_page
 from zen.tasks.notifications import send_notification
 from zen.tasks.shared import get_list_result_from_mapped_task
-from prefect.engine.results import S3Result
+from zen.utils.with_results import FlowWithResults
 
 
-with Flow('IMDB top movies', result=S3Result('zen-flow-results')) as flow:
+with FlowWithResults('IMDB top movies') as flow:
     sort_by = Parameter('sort_by', 'ranking')
     sort_direction = Parameter('sort_direction', 'ASC')
     limit = Parameter('limit', 3)
