@@ -6,7 +6,6 @@ visualize_dir: "viz"
 aws_profile: "default"
 region_name: "ap-south-1"
 ecr_registry_id: "<aws acount id>"
-results_bucket: "bucket"
 env:
   # NOTE: Required
   RESULTS_BUCKET: "value"
