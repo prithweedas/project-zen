@@ -17,10 +17,6 @@ locals {
   prefect_k8s_namespace = kubernetes_namespace.prefect.metadata.0.name
 }
 
-locals {
-  iam_serviceaccount_annotation = "eks.amazonaws.com/role-arn"
-}
-
 resource "kubernetes_service_account" "prefect_serviceaccount" {
   metadata {
     name      = "${var.project_name}-prefect-serviceaccount"
