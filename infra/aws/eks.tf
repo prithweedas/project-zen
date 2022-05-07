@@ -1,12 +1,12 @@
 # NOTE: Roles and Policies for EKS
 
 locals {
-  eks_name = "${var.project_name}-eks-role"
+  eks_role_name = "${var.project_name}-eks-role"
 }
 
 
 resource "aws_iam_role" "eks" {
-  name = local.eks_name
+  name = local.eks_role_name
 
   assume_role_policy = <<POLICY
 {
@@ -24,7 +24,7 @@ resource "aws_iam_role" "eks" {
   POLICY
 
   tags = {
-    "Name" = local.eks_name
+    "Name" = local.eks_role_name
   }
 }
 
