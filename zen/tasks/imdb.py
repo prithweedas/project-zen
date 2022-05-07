@@ -1,5 +1,4 @@
 from typing import List
-from bs4 import BeautifulSoup
 import prefect
 from prefect import task
 import datetime
@@ -29,19 +28,11 @@ def make_imdb_search_url(sort_by: str, sort_direction: str) -> str:
     return url
 
 
-@task(name='Fetch search page as soup', max_retries=3, retry_delay=datetime.timedelta(seconds=30))
-def fetch_search_page(url: str) -> BeautifulSoup:
-    return get_html_soup(url=url)
-
-
-@task(name='Fetch film page as soup', max_retries=3, retry_delay=datetime.timedelta(seconds=30))
-def fetch_film_page(url: str) -> BeautifulSoup:
-    return get_html_soup(url=url)
-
-
-@task(name='Extract film URLs')
-def extract_film_urls(soup: BeautifulSoup, limit: int) -> List[str]:
+@task(name='Extract film URLs', max_retries=3, retry_delay=datetime.timedelta(seconds=30))
+def extract_film_urls(url: str, limit: int) -> List[str]:
     logger = prefect.context.get('logger')
+
+    soup = get_html_soup(url=url)
 
     rows = soup.find('table', {
                      'class': ['chart', 'full-width']}).find('tbody').find_all('tr', limit=limit)
@@ -51,9 +42,11 @@ def extract_film_urls(soup: BeautifulSoup, limit: int) -> List[str]:
     return urls
 
 
-@task(name='Extract film data')
-def extract_film_data(soup: BeautifulSoup) -> FilmDetails:
+@task(name='Extract film data', max_retries=3, retry_delay=datetime.timedelta(seconds=30))
+def extract_film_data(url: str) -> FilmDetails:
     logger = prefect.context.get('logger')
+
+    soup = get_html_soup(url=url)
 
     name = soup.find('h1', {'data-testid': 'hero-title-block__title'}).text
     logger.info(f'Name: {name}')

@@ -1,7 +1,7 @@
 from prefect import Parameter, case
 
-from zen.tasks.imdb import extract_film_data, validate_parameters, make_imdb_search_url, \
-    fetch_search_page, extract_film_urls, fetch_film_page
+from zen.tasks.imdb import extract_film_data, validate_parameters, make_imdb_search_url,\
+    extract_film_urls
 from zen.tasks.notifications import send_notification
 from zen.tasks.shared import get_list_result_from_mapped_task
 from zen.utils.with_results import FlowWithResults
@@ -22,11 +22,9 @@ with FlowWithResults('IMDB top movies') as flow:
         search_url = make_imdb_search_url(sort_by=sort_by,
                                           sort_direction=sort_direction)
 
-        soup = fetch_search_page(search_url)
-        film_urls = extract_film_urls(soup=soup, limit=limit)
+        film_urls = extract_film_urls(url=search_url, limit=limit)
 
-        film_soups = fetch_film_page.map(url=film_urls)
-        film_details_map = extract_film_data.map(soup=film_soups)
+        film_details_map = extract_film_data.map(url=film_urls)
 
         film_details_list = get_list_result_from_mapped_task(film_details_map)
 
