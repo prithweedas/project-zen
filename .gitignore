@@ -166,3 +166,5 @@ viz/*
 !*.sample.tfvars
 
 secrets.txt
+
+results/*
