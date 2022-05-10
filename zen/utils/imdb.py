@@ -4,7 +4,10 @@ from bs4 import BeautifulSoup
 
 
 ALLOWED_SORT_PARAMETERS = {
-    'ranking': 'rk'
+    'ranking': 'rk',
+    'imdb_rating': 'ir',
+    'release_date': 'us',
+    'number_of_ratings': 'nv'
 }
 
 ALLOWED_SORT_DIRECTIONS = {
