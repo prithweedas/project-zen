@@ -196,7 +196,7 @@ resource "kubernetes_deployment" "prefect_agent" {
   }
 
   spec {
-    replicas = 2
+    replicas = 3
     selector {
       match_labels = {
         "name" = "prefect-agent"
