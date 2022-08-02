@@ -73,18 +73,24 @@ def extract_film_data(url: str) -> FilmDetails:
                                   }).find_all('li')))
     logger.info(f'Directors: {directors}')
 
-    synopsis = soup.find('p', {'data-testid': 'plot'}
-                         ).find('span', {'data-testid': 'plot-xl'}).text
+    synopsis = soup.find('span', {'data-testid': 'plot-xl'}).text
     logger.info(f'Synopsis: {synopsis}')
 
-    rating = float(soup.find(
+    rating = soup.find(
         'div',
-        {'data-testid': 'hero-rating-bar__aggregate-rating__score'}).find('span').text)
+        {'data-testid': 'hero-rating-bar__aggregate-rating__score'})
+
+    if(rating is not None):
+        rating = rating.find('span').text
+    else:
+        rating = 'Not Available'
+
     logger.info(f'Rating: {rating}')
 
     film = FilmDetails(name=name,
                        directors=directors,
                        rating=rating,
                        poster_url=poster_url,
-                       synopsis=synopsis)
+                       synopsis=synopsis
+                       )
     return film

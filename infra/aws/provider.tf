@@ -16,8 +16,6 @@ variable "aws_profile" {
 # NOTE: Configures terraform providers, i.e. aws
 
 terraform {
-
-
   backend "s3" {
     profile = "default"
     bucket  = "vested-env-files"

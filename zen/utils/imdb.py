@@ -24,7 +24,7 @@ class FilmDetails(NamedTuple):
     name: str
     poster_url: str
     directors: str
-    rating: float
+    rating: str
     synopsis: str
 
 
